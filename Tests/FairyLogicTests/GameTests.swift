@@ -57,6 +57,18 @@ final class GameTests: XCTestCase {
         XCTAssertEqual(g.py, Pong.maxPY)
     }
 
+    func testPongPaddleFollowsTouch() {
+        let g = Pong(rng: GameRNG(seed: 9), clock: { 0 })
+        g.touch(x: 0.5, y: 0)
+        XCTAssertEqual(g.py, 1)
+        g.touch(x: 0.5, y: 1)
+        XCTAssertEqual(g.py, Pong.maxPY)
+        g.touch(x: 0.5, y: 0.5)
+        XCTAssertEqual(g.py, 8)
+        g.configure(points: 3, difficulty: "hard")
+        XCTAssertEqual(g.points, 3)
+    }
+
     // MARK: tetris
 
     func testTetrisHardDropLocksPiece() {

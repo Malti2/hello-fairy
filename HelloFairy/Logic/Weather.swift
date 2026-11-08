@@ -259,7 +259,7 @@ final class WeatherApp: CurtainApp {
     static let retrySeconds = 30.0
 
     let tick = 1.0
-    let hint = "links/rechts seite · enter aktualisiert"
+    let hint = "wischen blaettert · tippen aktualisiert"
 
     private var cityQuery: String?
     private let clock: () -> Double
@@ -291,6 +291,14 @@ final class WeatherApp: CurtainApp {
 
     func reset() { nextFetch = 0 }
     func stop() { stopped = true }
+
+    /// neue stadt: wird beim naechsten schritt gesucht und gespeichert
+    func setCity(_ city: String) {
+        let q = city.trimmingCharacters(in: .whitespaces)
+        guard !q.isEmpty, q.caseInsensitiveCompare(loc?.name ?? "") != .orderedSame else { return }
+        cityQuery = q
+        reset()
+    }
 
     func key(_ key: Key) {
         switch key {

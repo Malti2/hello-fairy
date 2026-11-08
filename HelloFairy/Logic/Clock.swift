@@ -96,7 +96,7 @@ enum ClockFace {
 
 final class ClockApp: CurtainApp {
     let tick = 1.0
-    let hint = "links/rechts wechselt analog / digital"
+    let hint = "wischen oder tippen wechselt analog / digital"
     private let now: () -> Date
     private(set) var page = 0
 

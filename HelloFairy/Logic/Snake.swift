@@ -29,7 +29,7 @@ final class Snake: CurtainApp {
     private var currentTick: Double
 
     var tick: Double { currentTick }
-    var hint: String { "wischen oder d-pad lenkt · pause · neustart" }
+    var hint: String { "wische in die richtung, in die die schlange soll" }
 
     init(w: Int = W - 2, h: Int = H - 2, wrap: Bool = false, border: Bool = true, tick: Double = 0.22,
          speedup: Double = 0.004, rng: GameRNG = GameRNG(), clock: @escaping () -> Double = monotonicNow) {

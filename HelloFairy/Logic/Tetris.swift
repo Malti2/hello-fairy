@@ -50,7 +50,7 @@ final class Tetris: CurtainApp {
     private(set) var x = 0
     private(set) var y = 0
 
-    var hint: String { "links/rechts bewegen · hoch oder B drehen · runter soft drop · A hard drop" }
+    var hint: String { "links/rechts wischen bewegt · tippen dreht · runter wischen beschleunigt · schnell runter = drop" }
 
     init(rng: GameRNG = GameRNG(), clock: @escaping () -> Double = monotonicNow) {
         self.rng = rng

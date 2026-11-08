@@ -134,7 +134,7 @@ final class MirrorApp: CurtainApp {
     enum Mode: String, CaseIterable { case thermal, color, silhouette, motion }
 
     let tick = 0.12
-    var hint: String { "links/rechts wechselt den look · A neuer hintergrund" }
+    var hint: String { "wischen wechselt den look · tippen nimmt den hintergrund neu auf" }
 
     private var source: FrameSource?
     private let makeSource: (() async throws -> FrameSource)?
@@ -157,8 +157,17 @@ final class MirrorApp: CurtainApp {
         self.budget = budget
     }
 
+    /// quelle tauschen (z.b. demo-kamera an/aus)
+    func replaceSource(_ new: FrameSource?) {
+        source?.close()
+        source = new
+        error = nil
+        reset()
+    }
+
     func start() async {
         guard source == nil, let make = makeSource else { return }
+        error = nil
         do { source = try await make() } catch {
             self.error = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
         }

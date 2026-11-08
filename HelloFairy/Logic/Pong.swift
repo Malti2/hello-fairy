@@ -8,8 +8,8 @@ final class Pong: CurtainApp {
     static let maxPY = H - 1 - paddleLen
     static let difficulty: [String: Double] = ["easy": 0.45, "normal": 0.72, "hard": 0.9]
 
-    let points: Int
-    let skill: Double
+    var points: Int
+    var skill: Double
     let baseTick: Double
     let rng: GameRNG
     let clock: () -> Double
@@ -23,7 +23,17 @@ final class Pong: CurtainApp {
     private(set) var rally = 0
     private var aim = 0
 
-    var hint: String { "d-pad hoch/runter bewegt den schlaeger" }
+    var hint: String { "finger hoch und runter bewegt den schlaeger" }
+
+    func configure(points: Int, difficulty: String) {
+        self.points = points
+        skill = Pong.difficulty[difficulty] ?? 0.72
+    }
+
+    func touch(x: Double, y: Double) {
+        let target = Int((y * Double(H)).rounded()) - Pong.paddleLen / 2
+        py = max(1, min(Pong.maxPY, target))
+    }
 
     init(points: Int = 5, difficulty: String = "normal", tick: Double = 0.14, rng: GameRNG = GameRNG(),
          clock: @escaping () -> Double = monotonicNow) {

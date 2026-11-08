@@ -184,7 +184,7 @@ final class Mario: CurtainApp {
     let clock: () -> Double
 
     var tick: Double { 0.1 }
-    var hint: String { "links/rechts laufen · A springen · B feuerball" }
+    var hint: String { "pfeile halten zum laufen · A springen · B feuerball" }
 
     var cycle = 0, num = 1, lives = 3, score = 0, power = 0
     private(set) var over = false

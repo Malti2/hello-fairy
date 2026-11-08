@@ -77,15 +77,19 @@ struct GlassCard<Content: View>: View {
 /// kleine status-pille: verbunden / nicht verbunden
 struct ConnectionPill: View {
     @Environment(FairyLink.self) private var link
+    @Environment(AppModel.self) private var model
 
     var body: some View {
-        HStack(spacing: 6) {
-            Circle().fill(color).frame(width: 8, height: 8)
-            Text(text).font(.caption.weight(.medium))
+        Button { model.tab = 3 } label: {
+            HStack(spacing: 6) {
+                Circle().fill(color).frame(width: 8, height: 8)
+                Text(text).font(.caption.weight(.medium))
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .glassEffect(.regular, in: Capsule())
+        .buttonStyle(.plain)
+        .glassEffect(.regular.interactive(), in: Capsule())
     }
 
     private var color: Color {

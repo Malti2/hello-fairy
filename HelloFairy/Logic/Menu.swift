@@ -4,6 +4,7 @@ struct AppEntry: Identifiable, Hashable {
     let id: String
     let title: String
     let symbol: String
+    let subtitle: String
 }
 
 /// das menue auf dem vorhang: icon der gewaehlten app + positionspunkte
@@ -13,13 +14,13 @@ enum CurtainMenu {
     ]
 
     static let items: [AppEntry] = [
-        AppEntry(id: "snake", title: "Snake", symbol: "lizard.fill"),
-        AppEntry(id: "pong", title: "Pong", symbol: "tennisball.fill"),
-        AppEntry(id: "tetris", title: "Tetris", symbol: "square.grid.2x2.fill"),
-        AppEntry(id: "mario", title: "Mario", symbol: "figure.run"),
-        AppEntry(id: "mirror", title: "Mirror", symbol: "camera.fill"),
-        AppEntry(id: "clock", title: "Uhr", symbol: "clock.fill"),
-        AppEntry(id: "weather", title: "Wetter", symbol: "cloud.sun.fill"),
+        AppEntry(id: "snake", title: "Snake", symbol: "lizard.fill", subtitle: "wischen zum lenken"),
+        AppEntry(id: "pong", title: "Pong", symbol: "tennisball.fill", subtitle: "finger hoch und runter"),
+        AppEntry(id: "tetris", title: "Tetris", symbol: "square.grid.2x2.fill", subtitle: "wischen und tippen"),
+        AppEntry(id: "mario", title: "Mario", symbol: "figure.run", subtitle: "laufen, springen, feuerball"),
+        AppEntry(id: "mirror", title: "Mirror", symbol: "camera.fill", subtitle: "du als licht-pixel"),
+        AppEntry(id: "clock", title: "Uhr", symbol: "clock.fill", subtitle: "analog und digital"),
+        AppEntry(id: "weather", title: "Wetter", symbol: "cloud.sun.fill", subtitle: "aktuell, heute, regen"),
     ]
 
     static let icons: [String: [String]] = [

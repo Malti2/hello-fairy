@@ -81,6 +81,13 @@ final class ArcadeRunner {
         refresh()
     }
 
+    func touch(x: Double, y: Double) {
+        app?.touch(x: x, y: y)
+        refresh()
+    }
+
+    func setInterval(_ seconds: Double) { minInterval = seconds }
+
     func restart() {
         app?.reset()
         refresh()

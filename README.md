@@ -155,3 +155,14 @@ yellow < 28, red above. Settings live in `~/.config/hellofairy/config.json`.
 The tests cover packet building against known vectors, all game logic, level generation (including a bot that
 plays generated levels), and the Bluetooth reconnect logic with a fake radio. Layout of the code: `hellofairy/protocol.py` (pure packet
 code), `ble.py` (transport), `arcade.py` (real-time runner), one module per app, `effects.py` (animations).
+
+## iOS app (no Mac needed)
+
+`HelloFairy/` is a native SwiftUI port (iOS 26, Liquid Glass) that talks to the lights over Bluetooth directly.
+First start: pick your lights; afterwards it opens straight into the apps (arrows or swipe to choose, the choice
+shows on the curtain). Controls are per app: Pong = finger up/down, Snake = swipe, Tetris = swipe/tap, Mario = buttons
++ swipe up, Mirror/Clock/Weather = swipe. Per-app settings are behind the gear. Leaving the Apps tab switches the
+curtain off until you set something.
+
+The unsigned IPA is built by `.github/workflows/ios.yml` (artifact `HelloFairy-unsigned-ipa`, or a release on `v*` tags);
+sign it yourself (Sideloadly, AltStore, TrollStore). Logic tests: `swift test` (host, no simulator).

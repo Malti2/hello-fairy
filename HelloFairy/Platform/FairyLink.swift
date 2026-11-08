@@ -94,10 +94,10 @@ final class FairyLink: NSObject {
 
     // MARK: scannen
 
-    func scan(seconds: Double = 5) async throws {
+    func scan(seconds: Double = 5, keepFound: Bool = false) async throws {
+        if phase == .connecting || phase == .discovering || phase == .ready { return }
         try await waitForPoweredOn()
-        found = []
-        seen = [:]
+        if !keepFound { found = [] }
         phase = .scanning
         central.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
         try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))

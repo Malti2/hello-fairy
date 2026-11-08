@@ -10,15 +10,19 @@ final class AppModel {
     let runner = ArcadeRunner()
     let curtain: Curtain
 
+    var tab = 0
+    /// false = es wurde noch nie ein geraet gewaehlt: dann zuerst die auswahl
+    var onboarded: Bool
     var menuIndex = 0
     var activeApp: String?
     var launching = false
     var notice: String?
 
-    @ObservationIgnored private var menuTask: Task<Void, Never>?
+    @ObservationIgnored private var ambientTask: Task<Void, Never>?
 
     init() {
         curtain = Curtain(link: link)
+        onboarded = Settings.deviceID != nil
     }
 
     /// wenn schon mal ein geraet gekoppelt war: still im hintergrund verbinden
@@ -27,19 +31,56 @@ final class AppModel {
         try? await link.connect()
     }
 
-    // MARK: menue auf dem vorhang
+    // MARK: startseite + aus-zustand
 
+    /// startseite (menue) auf den vorhang
     func pushMenu() {
-        menuTask?.cancel()
+        guard tab == 0, activeApp == nil, link.isReady else { return }
+        ambientTask?.cancel()
         let idx = menuIndex
-        menuTask = Task { [weak self] in
-            guard let self, self.link.isReady else { return }
+        ambientTask = Task { [weak self] in
+            guard let self else { return }
             do {
                 _ = try await self.curtain.ensureDrawMode()
                 try await self.curtain.sendChanges(CurtainMenu.frame(index: idx))
+            } catch is CancellationError {
             } catch {
                 self.notice = error.localizedDescription
             }
+        }
+    }
+
+    /// alles aus (tv-effekt), bis der nutzer wieder etwas einstellt
+    func lightsOff() {
+        ambientTask?.cancel()
+        guard link.isReady else { return }
+        let idx = menuIndex
+        ambientTask = Task { [weak self] in
+            guard let self else { return }
+            await self.curtain.tvOff(CurtainMenu.frame(index: idx))
+            if Task.isCancelled { return }
+            try? await self.link.setPower(false)
+            self.link.screenState = nil
+        }
+    }
+
+    func tabChanged(from old: Int, to new: Int) {
+        if new == 0 { pushMenu() } else if old == 0 { lightsOff() }
+    }
+
+    func linkBecameReady() {
+        onboarded = true
+        pushMenu()
+    }
+
+    func becameActive() { pushMenu() }
+
+    func wentToBackground() {
+        guard tab == 0 else { return }
+        Task { [weak self] in
+            guard let self else { return }
+            await self.close()
+            self.lightsOff()
         }
     }
 
@@ -65,13 +106,33 @@ final class AppModel {
         }
     }
 
+    /// einstellungen aus dem app-sheet auf die laufende app anwenden
+    func applySettings() {
+        runner.setInterval(Settings.minInterval)
+        switch runner.app {
+        case let p as Pong:
+            p.configure(points: Settings.pongPoints, difficulty: Settings.pongDifficulty)
+        case let w as WeatherApp:
+            w.setCity(Settings.city)
+        case let m as MirrorApp:
+            if UserDefaults.standard.bool(forKey: "hf.demoCamera") {
+                m.replaceSource(DemoSource())
+            } else {
+                m.replaceSource(nil)
+                Task { await m.start() }
+            }
+        default:
+            break
+        }
+    }
+
     func launch(_ id: String) async {
         guard activeApp == nil, !launching else { return }
         launching = true
         defer { launching = false }
         notice = nil
-        menuTask?.cancel()
-        await menuTask?.value
+        ambientTask?.cancel()
+        await ambientTask?.value
         let app = makeApp(id)
         let lights = link.isReady
         if lights {
@@ -91,13 +152,5 @@ final class AppModel {
         }
         UIApplication.shared.isIdleTimerDisabled = false
         activeApp = nil
-    }
-
-    /// wie "quit" im terminal: tv-aus-effekt, dann alles aus
-    func switchOffWithEffect() async {
-        guard link.isReady else { return }
-        await curtain.tvOff(CurtainMenu.frame(index: menuIndex))
-        try? await link.setPower(false)
-        link.screenState = nil
     }
 }
