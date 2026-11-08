@@ -1,0 +1,56 @@
+name: HelloFairy
+options:
+  bundleIdPrefix: net.hoepers
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    CODE_SIGNING_ALLOWED: "NO"
+    CODE_SIGNING_REQUIRED: "NO"
+    CODE_SIGN_IDENTITY: ""
+    ENABLE_USER_SCRIPT_SANDBOXING: "NO"
+targets:
+  HelloFairy:
+    type: application
+    platform: iOS
+    sources:
+      - path: HelloFairy
+    info:
+      path: Support/Info.plist
+      properties:
+        CFBundleDisplayName: Hello Fairy
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIBackgroundModes:
+          - bluetooth-central
+        NSBluetoothAlwaysUsageDescription: Hello Fairy verbindet sich direkt per Bluetooth mit deinen LED-Lichtern.
+        NSCameraUsageDescription: Die Kamera wird fuer den Spiegel-Modus gebraucht. Bilder werden nur auf 20x20 Pixel verkleinert und nie gespeichert.
+        ITSAppUsesNonExemptEncryption: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: net.hoepers.hellofairy
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        SWIFT_EMIT_LOC_STRINGS: "NO"
+schemes:
+  HelloFairy:
+    build:
+      targets:
+        HelloFairy: all
+    run:
+      config: Debug
+    archive:
+      config: Release
