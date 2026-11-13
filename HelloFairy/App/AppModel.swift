@@ -93,6 +93,21 @@ final class AppModel {
         case "pong": return Pong(points: Settings.pongPoints, difficulty: Settings.pongDifficulty)
         case "tetris": return Tetris()
         case "mario": return Mario()
+        case "breakout": return Breakout()
+        case "flappy": return Flappy()
+        case "life": return Life()
+        case "paint": return PaintApp()
+        case "show": return ShowApp()
+        case "marquee":
+            return MarqueeApp(text: Settings.marqueeText, big: Settings.marqueeBig, rainbow: Settings.marqueeRainbow,
+                              tick: Settings.marqueeTick)
+        case "timer":
+            let t = CountdownApp(minutes: Settings.timerMinutes)
+            t.onFinish = { UINotificationFeedbackGenerator().notificationOccurred(.success) }
+            return t
+        case "sound":
+            if d.bool(forKey: "hf.demoAudio") { return SoundApp(source: DemoAudio()) }
+            return SoundApp(makeSource: { () async throws -> LevelSource in try await MicSource.make() })
         case "clock": return ClockApp()
         case "weather":
             let typed = Settings.city.trimmingCharacters(in: .whitespaces)
@@ -114,6 +129,18 @@ final class AppModel {
             p.configure(points: Settings.pongPoints, difficulty: Settings.pongDifficulty)
         case let w as WeatherApp:
             w.setCity(Settings.city)
+        case let m as MarqueeApp:
+            m.configure(text: Settings.marqueeText, big: Settings.marqueeBig, rainbow: Settings.marqueeRainbow,
+                        tick: Settings.marqueeTick)
+        case let t as CountdownApp:
+            t.setMinutes(Settings.timerMinutes)
+        case let s as SoundApp:
+            if UserDefaults.standard.bool(forKey: "hf.demoAudio") {
+                s.replaceSource(DemoAudio())
+            } else {
+                s.replaceSource(nil)
+                Task { await s.start() }
+            }
         case let m as MirrorApp:
             if UserDefaults.standard.bool(forKey: "hf.demoCamera") {
                 m.replaceSource(DemoSource())

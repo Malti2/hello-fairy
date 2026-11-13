@@ -18,9 +18,17 @@ enum CurtainMenu {
         AppEntry(id: "pong", title: "Pong", symbol: "tennisball.fill", subtitle: "finger hoch und runter"),
         AppEntry(id: "tetris", title: "Tetris", symbol: "square.grid.2x2.fill", subtitle: "wischen und tippen"),
         AppEntry(id: "mario", title: "Mario", symbol: "figure.run", subtitle: "laufen, springen, feuerball"),
-        AppEntry(id: "mirror", title: "Mirror", symbol: "camera.fill", subtitle: "du als licht-pixel"),
+        AppEntry(id: "breakout", title: "Breakout", symbol: "rectangle.split.3x1.fill", subtitle: "steine abraeumen"),
+        AppEntry(id: "flappy", title: "Flappy", symbol: "bird.fill", subtitle: "tippen zum flattern"),
+        AppEntry(id: "life", title: "Life", symbol: "circle.grid.3x3.fill", subtitle: "zellen malen und wachsen sehen"),
+        AppEntry(id: "paint", title: "Zeichnen", symbol: "paintbrush.pointed.fill", subtitle: "mit dem finger malen"),
+        AppEntry(id: "show", title: "Lichtshow", symbol: "sparkles", subtitle: "plasma, feuer, matrix, sterne"),
+        AppEntry(id: "marquee", title: "Laufschrift", symbol: "textformat.abc", subtitle: "dein text scrollt vorbei"),
         AppEntry(id: "clock", title: "Uhr", symbol: "clock.fill", subtitle: "analog und digital"),
+        AppEntry(id: "timer", title: "Timer", symbol: "timer", subtitle: "timer und stoppuhr"),
         AppEntry(id: "weather", title: "Wetter", symbol: "cloud.sun.fill", subtitle: "aktuell, heute, regen"),
+        AppEntry(id: "mirror", title: "Mirror", symbol: "camera.fill", subtitle: "du als licht-pixel"),
+        AppEntry(id: "sound", title: "Sound", symbol: "waveform", subtitle: "musik als leuchtende saeulen"),
     ]
 
     static let icons: [String: [String]] = [
@@ -44,6 +52,30 @@ enum CurtainMenu {
         "weather": [
             "....Y.......", ".Y..Y..Y....", "..YYYYY.....", "..YYYYWWW...", "...YYWWWWWW.", "....WWWWWWW.", ".....WWWWW..",
         ],
+        "breakout": [
+            "RRRRRRRRRRRR", "OOOOOOOOOOOO", "YYYYYYYYYYYY", "............", ".....W......", "............", "....GGGG....",
+        ],
+        "flappy": [
+            ".GG......GG.", ".GG......GG.", ".GG...YY.GG.", "......YYR...", ".GG......GG.", ".GG......GG.", ".GG......GG.",
+        ],
+        "life": [
+            "..C.........", "...C....CCC.", ".CCC........", "............",
+        ],
+        "paint": [
+            "RROOYYGGCCBB", "RROOYYGGCCBB", "............", "......W.....", ".....WW.....",
+        ],
+        "show": [
+            "....RRRR....", "..RROOOORR..", ".ROOYYYYOOR.", "ROYYGGGGYYOR",
+        ],
+        "marquee": [
+            "W.W.WWW.W...", "W.W.W...W...", "WWW.WW..W...", "W.W.W...W...", "W.W.WWW.WWW.",
+        ],
+        "timer": [
+            "WWWWWWWWW", ".WYYYYYW.", "..WYYYW..", "...WYW...", "....W....", "...W.W...", "..W.Y.W..", ".W.YYY.W.", "WWWWWWWWW",
+        ],
+        "sound": [
+            "..........R.", "....Y.....R.", "....Y..G..R.", "..C.Y..G..R.", "..C.Y..G..R.", "B.C.Y..G..R.", "B.C.Y.GG..R.",
+        ],
         "mirror": [
             "....WWWW....", "..WW....WW..", "WW..CCCC..WW", "W..CCBBCC..W", "WW..CCCC..WW", "..WW....WW..", "....WWWW....",
         ],
@@ -60,8 +92,9 @@ enum CurtainMenu {
             for (dx, ch) in row.enumerated() { f[(y0 + dy) * W + x0 + dx] = codes[ch] ?? Px.off }
         }
         let n = items.count
-        let dotsX = (W - (2 * n - 1)) / 2
-        for k in 0..<n { f[17 * W + dotsX + 2 * k] = k == i ? 30 : 120 }
+        let gap = n > 9 ? 1 : 2                 // viele apps: punkte ohne luecke, damit alle passen
+        let dotsX = (W - (gap * (n - 1) + 1)) / 2
+        for k in 0..<n { f[17 * W + dotsX + gap * k] = k == i ? 30 : 120 }
         return f
     }
 }

@@ -38,6 +38,38 @@ enum Settings {
         set { defaults.set(newValue, forKey: "hf.pong.points") }
     }
 
+    static var marqueeText: String {
+        get { defaults.string(forKey: "hf.marquee.text") ?? "HELLO FAIRY" }
+        set { defaults.set(newValue, forKey: "hf.marquee.text") }
+    }
+
+    static var marqueeBig: Bool {
+        get { defaults.object(forKey: "hf.marquee.big") as? Bool ?? true }
+        set { defaults.set(newValue, forKey: "hf.marquee.big") }
+    }
+
+    static var marqueeRainbow: Bool {
+        get { defaults.object(forKey: "hf.marquee.rainbow") as? Bool ?? true }
+        set { defaults.set(newValue, forKey: "hf.marquee.rainbow") }
+    }
+
+    /// sekunden pro schritt der laufschrift
+    static var marqueeTick: Double {
+        get { let v = defaults.double(forKey: "hf.marquee.tick"); return v > 0 ? v : 0.09 }
+        set { defaults.set(newValue, forKey: "hf.marquee.tick") }
+    }
+
+    static var timerMinutes: Int {
+        get { let v = defaults.integer(forKey: "hf.timer.minutes"); return v > 0 ? v : 5 }
+        set { defaults.set(newValue, forKey: "hf.timer.minutes") }
+    }
+
+    /// gespeichertes bild der zeichen-app (400 bytes)
+    static var paintData: [UInt8]? {
+        get { defaults.data(forKey: "hf.paint").map { [UInt8]($0) } }
+        set { defaults.set(newValue.map { Data($0) }, forKey: "hf.paint") }
+    }
+
     static var minInterval: Double {
         get { let v = defaults.double(forKey: "hf.minInterval"); return v > 0 ? v : 0.06 }
         set { defaults.set(newValue, forKey: "hf.minInterval") }

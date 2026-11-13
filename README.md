@@ -161,7 +161,7 @@ code), `ble.py` (transport), `arcade.py` (real-time runner), one module per app,
 `HelloFairy/` is a native SwiftUI port (iOS 26, Liquid Glass) that talks to the lights over Bluetooth directly.
 First start: pick your lights; afterwards it opens straight into the apps (arrows or swipe to choose, the choice
 shows on the curtain). Controls are per app: Pong = finger up/down, Snake = swipe, Tetris = swipe/tap, Mario = buttons
-+ swipe up, Mirror/Clock/Weather = swipe. Per-app settings are behind the gear. Leaving the Apps tab switches the
++ swipe up, Mirror/Clock/Weather = swipe. More apps: Breakout (finger moves the paddle), Flappy (tap), Life (paint cells), Paint (draw on the curtain, saved), Light show (plasma/fire/matrix/stars), Scrolling text, Timer/stopwatch, Sound (microphone as light columns). The Image tab also has built-in pixel art. Per-app settings are behind the gear. Leaving the Apps tab switches the
 curtain off until you set something.
 
 The unsigned IPA is built by `.github/workflows/ios.yml` (artifact `HelloFairy-unsigned-ipa`, or a release on `v*` tags);

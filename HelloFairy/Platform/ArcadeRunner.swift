@@ -86,6 +86,11 @@ final class ArcadeRunner {
         refresh()
     }
 
+    func touchEnded() {
+        app?.touchEnded()
+        refresh()
+    }
+
     func setInterval(_ seconds: Double) { minInterval = seconds }
 
     func restart() {

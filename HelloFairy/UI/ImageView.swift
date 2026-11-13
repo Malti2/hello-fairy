@@ -99,6 +99,33 @@ struct ImageView: View {
                 .disabled(sending || textPages.isEmpty)
             }
 
+            GlassCard(title: "Pixel-Art") {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 76), spacing: 10)], spacing: 10) {
+                    ForEach(PixelArt.all) { art in
+                        Button {
+                            send { try await link.sendImage(art.frame(), progress: report) }
+                        } label: {
+                            VStack(spacing: 4) {
+                                CurtainView(frame: art.frame(), glow: false).frame(height: 66)
+                                Text(art.title).font(.caption2.weight(.medium))
+                            }
+                            .padding(6)
+                            .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.plain)
+                        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+                        .disabled(sending)
+                    }
+                }
+                Button {
+                    send { try await link.sendImage(PixelArt.rainbow(), progress: report) }
+                } label: {
+                    Label("Regenbogen", systemImage: "rainbow").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.glass)
+                .disabled(sending)
+            }
+
             GlassCard(title: "Bewegung des Bildes") {
                 Picker("Bewegung", selection: $movement) {
                     ForEach(Proto.movements.filter { $0.name != "blink" && $0.name != "breathe" }, id: \.name) {

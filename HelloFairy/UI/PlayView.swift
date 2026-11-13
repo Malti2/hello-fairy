@@ -18,6 +18,7 @@ struct PlayView: View {
                     VStack(spacing: 12) {
                         Spacer(minLength: 0)
                         CurtainView(frame: runner.frame)
+                            .overlay { if InputSurface<EmptyView>.directTouch(appID) { touchPad } }
                             .padding(14)
                             .glassEffect(.regular, in: .rect(cornerRadius: 30))
                         info
@@ -88,6 +89,28 @@ struct PlayView: View {
         .frame(maxWidth: .infinity)
     }
 
+    /// finger direkt auf dem vorhang (zeichnen, life): position = pixel
+    private var touchPad: some View {
+        GeometryReader { geo in
+            Color.clear
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { v in
+                            runner.touch(x: v.location.x / max(1, geo.size.width), y: v.location.y / max(1, geo.size.height))
+                        }
+                        .onEnded { _ in runner.touchEnded() }
+                )
+        }
+    }
+
+    private func chip(_ title: String, _ symbol: String, _ action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: symbol).frame(maxWidth: .infinity).padding(.vertical, 6)
+        }
+        .buttonStyle(.glass)
+    }
+
     // MARK: tasten (nur wo wischen/tippen nicht reicht)
 
     @ViewBuilder
@@ -128,6 +151,43 @@ struct PlayView: View {
                     .frame(maxWidth: .infinity).padding(.vertical, 6)
             }
             .buttonStyle(.glass)
+        case "paint":
+            PaintTools()
+        case "life":
+            GlassEffectContainer(spacing: 12) {
+                HStack(spacing: 12) {
+                    chip("Zufall", "dice.fill") { runner.press(.space) }
+                    chip("Langsamer", "tortoise.fill") { runner.press(.down) }
+                    chip("Schneller", "hare.fill") { runner.press(.up) }
+                }
+            }
+        case "show", "sound":
+            GlassEffectContainer(spacing: 12) {
+                HStack(spacing: 12) {
+                    chip("Zurueck", "chevron.left") { runner.press(.left) }
+                    chip("Weiter", "chevron.right") { runner.press(.right) }
+                }
+            }
+        case "marquee":
+            GlassEffectContainer(spacing: 12) {
+                HStack(spacing: 12) {
+                    chip("Langsamer", "tortoise.fill") { runner.press(.down) }
+                    chip("Farbe", "paintpalette.fill") { runner.press(.enter) }
+                    chip("Schneller", "hare.fill") { runner.press(.up) }
+                }
+            }
+        case "timer":
+            GlassEffectContainer(spacing: 12) {
+                HStack(spacing: 12) {
+                    chip("Minute", "minus") { runner.press(.down) }
+                    Button { runner.press(.enter) } label: {
+                        Label("Start / Pause", systemImage: "playpause.fill").frame(maxWidth: .infinity).padding(.vertical, 6)
+                    }
+                    .buttonStyle(.glassProminent)
+                    chip("Minute", "plus") { runner.press(.up) }
+                    chip("Modus", "arrow.left.arrow.right") { runner.press(.right) }
+                }
+            }
         default:
             EmptyView()
         }
@@ -151,6 +211,9 @@ struct InputSurface<Content: View>: View {
         self.content = content()
     }
 
+    /// diese apps lesen die position direkt auf dem vorhang (siehe PlayView.touchPad)
+    static func directTouch(_ id: String) -> Bool { id == "paint" || id == "life" }
+
     private var threshold: CGFloat {
         switch appID {
         case "snake": return 22
@@ -161,14 +224,18 @@ struct InputSurface<Content: View>: View {
 
     var body: some View {
         GeometryReader { geo in
-            content
-                .frame(width: geo.size.width, height: geo.size.height)
-                .contentShape(Rectangle())
-                .gesture(
-                    DragGesture(minimumDistance: 0)
-                        .onChanged { v in handleChange(v, size: geo.size) }
-                        .onEnded { v in handleEnd(v) }
-                )
+            if Self.directTouch(appID) {
+                content.frame(width: geo.size.width, height: geo.size.height)
+            } else {
+                content
+                    .frame(width: geo.size.width, height: geo.size.height)
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { v in handleChange(v, size: geo.size) }
+                            .onEnded { v in handleEnd(v) }
+                    )
+            }
         }
     }
 
@@ -176,6 +243,15 @@ struct InputSurface<Content: View>: View {
         if appID == "pong" {
             let ny = (v.location.y / max(1, size.height) - 0.1) / 0.8        // ränder frei, damit der schläger die enden erreicht
             runner.touch(x: v.location.x / max(1, size.width), y: max(0, min(1, ny)))
+            return
+        }
+        if appID == "breakout" {
+            let nx = (v.location.x / max(1, size.width) - 0.1) / 0.8
+            runner.touch(x: max(0, min(1, nx)), y: 0.5)
+            return
+        }
+        if appID == "flappy" {
+            if last == nil { last = v.startLocation; runner.press(.space); UIImpactFeedbackGenerator(style: .light).impactOccurred() }
             return
         }
         if last == nil { last = v.startLocation; moved = false }
@@ -192,13 +268,14 @@ struct InputSurface<Content: View>: View {
 
     private func handleEnd(_ v: DragGesture.Value) {
         defer { last = nil; moved = false }
-        if appID == "pong" { return }
+        if appID == "pong" || appID == "flappy" { return }
+        if appID == "breakout" { runner.press(.space); return }           // loslassen startet den ball
         if !moved {
             switch appID {          // tippen
             case "tetris": runner.press(.rotate)
             case "mario": runner.press(.space)
             case "mirror": runner.press(.space)
-            case "clock", "weather": runner.press(.enter)
+            case "clock", "weather", "show", "marquee", "timer", "sound": runner.press(.enter)
             default: break
             }
         } else if appID == "tetris" {
@@ -222,6 +299,12 @@ struct AppSettingsSheet: View {
     @AppStorage("hf.pong.points") private var points = 5
     @AppStorage("hf.minInterval") private var minInterval = 0.06
     @AppStorage("hf.demoCamera") private var demoCamera = false
+    @AppStorage("hf.demoAudio") private var demoAudio = false
+    @AppStorage("hf.marquee.text") private var marqueeText = "HELLO FAIRY"
+    @AppStorage("hf.marquee.big") private var marqueeBig = true
+    @AppStorage("hf.marquee.rainbow") private var marqueeRainbow = true
+    @AppStorage("hf.marquee.tick") private var marqueeTick = 0.09
+    @AppStorage("hf.timer.minutes") private var timerMinutes = 5
 
     var body: some View {
         NavigationStack {
@@ -245,6 +328,27 @@ struct AppSettingsSheet: View {
                 case "mirror":
                     Section("Kamera") {
                         Toggle("Demo-Kamera statt echter Kamera", isOn: $demoCamera)
+                    }
+                case "sound":
+                    Section("Mikrofon") {
+                        Toggle("Demo-Ton statt Mikrofon", isOn: $demoAudio)
+                    }
+                case "marquee":
+                    Section("Laufschrift") {
+                        TextField("Text", text: $marqueeText)
+                            .autocorrectionDisabled()
+                            .submitLabel(.done)
+                        Toggle("Gross (2x)", isOn: $marqueeBig)
+                        Toggle("Regenbogen", isOn: $marqueeRainbow)
+                        VStack(alignment: .leading) {
+                            Text("Tempo")
+                            Slider(value: $marqueeTick, in: 0.03...0.25) { Text("Tempo") }
+                                .environment(\.layoutDirection, .rightToLeft)
+                        }
+                    }
+                case "timer":
+                    Section("Timer") {
+                        Stepper("\(timerMinutes) Minuten", value: $timerMinutes, in: 1...99)
                     }
                 default:
                     EmptyView()
@@ -326,5 +430,63 @@ struct PadButton: View {
                     repeater = nil
                 }
         )
+    }
+}
+
+// MARK: - zeichnen: farbpalette
+
+struct PaintTools: View {
+    @Environment(ArcadeRunner.self) private var runner
+    @State private var selected = 3
+
+    private var paint: PaintApp? { runner.app as? PaintApp }
+
+    var body: some View {
+        VStack(spacing: 10) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                GlassEffectContainer(spacing: 8) {
+                    HStack(spacing: 8) {
+                        ForEach(PaintApp.palette.indices, id: \.self) { i in
+                            Button {
+                                selected = i
+                                paint?.select(i)
+                            } label: {
+                                swatch(i)
+                            }
+                            .buttonStyle(.plain)
+                            .glassEffect(.regular.interactive(), in: Circle())
+                        }
+                    }
+                    .padding(.horizontal, 2)
+                }
+            }
+            GlassEffectContainer(spacing: 12) {
+                HStack(spacing: 12) {
+                    Button { paint?.fill() } label: {
+                        Label("Fuellen", systemImage: "drop.fill").frame(maxWidth: .infinity).padding(.vertical, 6)
+                    }
+                    .buttonStyle(.glass)
+                    Button { paint?.clear() } label: {
+                        Label("Leeren", systemImage: "trash").frame(maxWidth: .infinity).padding(.vertical, 6)
+                    }
+                    .buttonStyle(.glass)
+                }
+            }
+        }
+        .onAppear { selected = paint?.selected ?? 3 }
+    }
+
+    @ViewBuilder
+    private func swatch(_ i: Int) -> some View {
+        let c = PaintApp.palette[i]
+        ZStack {
+            if c == Px.off {
+                Image(systemName: "eraser.fill").font(.body)
+            } else {
+                Circle().fill(CurtainPalette.color(c)).frame(width: 30, height: 30)
+            }
+            if selected == i { Circle().strokeBorder(.white, lineWidth: 3).frame(width: 40, height: 40) }
+        }
+        .frame(width: 48, height: 48)
     }
 }

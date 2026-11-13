@@ -13,6 +13,7 @@ protocol CurtainApp: AnyObject {
     func key(_ key: Key)
     /// beruehrung auf dem vorhang, x/y normiert 0...1 (z.b. pong: schlaeger folgt dem finger)
     func touch(x: Double, y: Double)
+    func touchEnded()
     func reset()
     func status() -> String
     /// z.b. kamera starten
@@ -22,6 +23,7 @@ protocol CurtainApp: AnyObject {
 
 extension CurtainApp {
     func touch(x: Double, y: Double) {}
+    func touchEnded() {}
     func start() async {}
     func stop() {}
 }
