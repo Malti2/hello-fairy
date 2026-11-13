@@ -30,7 +30,9 @@ final class MicSource: NSObject, LevelSource, @unchecked Sendable {
     private func start() throws {
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.record, mode: .measurement, options: [])
+            // mixWithOthers: die Musik laeuft weiter, waehrend das Mikro mithoert (und die App im Hintergrund wach bleibt)
+            try session.setCategory(.playAndRecord, mode: .measurement,
+                                    options: [.mixWithOthers, .allowBluetoothA2DP, .defaultToSpeaker])
             try session.setActive(true)
             let input = engine.inputNode
             let format = input.outputFormat(forBus: 0)

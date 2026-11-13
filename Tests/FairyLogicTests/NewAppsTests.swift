@@ -213,9 +213,27 @@ final class NewAppsTests: XCTestCase {
         let loud = s.frame().filter { $0 != Px.off }.count
         XCTAssertGreaterThan(loud, quiet)
         validFrame(s.frame())
+        XCTAssertEqual(s.mode, .cover)          // ohne cover: saeulen
+        s.key(.right)
+        XCTAssertEqual(s.mode, .bars)
         s.key(.right)
         XCTAssertEqual(s.mode, .mirror)
         for _ in 0..<5 { s.step() }
+        validFrame(s.frame())
+    }
+
+    func testSoundShowsCoverWhenAvailable() {
+        let s = SoundApp(source: FakeAudio())
+        var art = blankFrame()
+        art[5] = 60
+        s.setCover(art, title: "Song - Artist")
+        XCTAssertEqual(s.frame(), art)
+        XCTAssertEqual(s.status(), "Song - Artist")
+        s.key(.right)                                    // saeulen
+        XCTAssertNotEqual(s.frame(), art)
+        s.key(.right); s.key(.right)                     // zurueck auf cover
+        XCTAssertEqual(s.frame(), art)
+        s.setCover(nil, title: nil)
         validFrame(s.frame())
     }
 

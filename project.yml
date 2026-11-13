@@ -36,8 +36,10 @@ targets:
           - UIInterfaceOrientationLandscapeRight
         UIBackgroundModes:
           - bluetooth-central
+          - audio
         NSBluetoothAlwaysUsageDescription: Hello Fairy verbindet sich direkt per Bluetooth mit deinen LED-Lichtern.
         NSCameraUsageDescription: Die Kamera wird fuer den Spiegel-Modus gebraucht. Bilder werden nur auf 20x20 Pixel verkleinert und nie gespeichert.
+        NSAppleMusicUsageDescription: Hello Fairy zeigt das Album-Cover des laufenden Titels als Pixel-Art auf deinen Lichtern.
         NSMicrophoneUsageDescription: Das Mikrofon wird fuer den Sound-Modus gebraucht. Es wird nichts aufgenommen oder gespeichert, nur die Lautstaerke steuert die Lichter.
         ITSAppUsesNonExemptEncryption: false
     settings:

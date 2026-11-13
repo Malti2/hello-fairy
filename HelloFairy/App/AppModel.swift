@@ -77,6 +77,7 @@ final class AppModel {
 
     func wentToBackground() {
         guard tab == 0 else { return }
+        if activeApp == "sound" { return }          // sound laeuft im hintergrund weiter (audio-modus haelt die app wach)
         Task { [weak self] in
             guard let self else { return }
             await self.close()
@@ -106,8 +107,19 @@ final class AppModel {
             t.onFinish = { UINotificationFeedbackGenerator().notificationOccurred(.success) }
             return t
         case "sound":
-            if d.bool(forKey: "hf.demoAudio") { return SoundApp(source: DemoAudio()) }
-            return SoundApp(makeSource: { () async throws -> LevelSource in try await MicSource.make() })
+            let app = d.bool(forKey: "hf.demoAudio")
+                ? SoundApp(source: DemoAudio())
+                : SoundApp(makeSource: { () async throws -> LevelSource in try await MicSource.make() })
+            let watcher = NowPlayingWatcher()
+            app.extraStart = { [weak app] in
+                await watcher.start { image, title in
+                    // cover als pixel-art: kraeftige farben, dunkles bleibt aus
+                    let frame = image.flatMap { ImageLoader.frame($0, fit: .cover, dark: 0.14, white: 0.2, boost: 1.3) }
+                    app?.setCover(frame, title: title)
+                }
+            }
+            app.extraStop = { watcher.stop() }
+            return app
         case "clock": return ClockApp()
         case "weather":
             let typed = Settings.city.trimmingCharacters(in: .whitespaces)

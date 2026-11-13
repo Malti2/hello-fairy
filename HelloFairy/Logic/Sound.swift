@@ -27,14 +27,26 @@ final class DemoAudio: LevelSource {
 /// musik/ton als leuchtende saeulen: verlauf von links nach rechts, hoehe = lautstaerke, farbe = tonhoehe
 final class SoundApp: CurtainApp {
     enum Mode: String, CaseIterable {
-        case bars, mirror
+        case cover, bars, mirror
 
-        var title: String { self == .bars ? "Saeulen" : "Spiegel" }
+        var title: String {
+            switch self {
+            case .cover: return "Cover"
+            case .bars: return "Saeulen"
+            case .mirror: return "Spiegel"
+            }
+        }
     }
 
     private var source: LevelSource?
     private let makeSource: (() async throws -> LevelSource)?
-    private(set) var mode: Mode = .bars
+    private(set) var mode: Mode = .cover
+    /// album-cover des laufenden titels als fertiges 20x20 bild (kommt von aussen, z.b. apple music)
+    private(set) var cover: Frame?
+    private(set) var coverTitle: String?
+    /// zusaetzliche start/stop-aktionen (now-playing beobachten)
+    var extraStart: (() async -> Void)?
+    var extraStop: (() -> Void)?
     private(set) var error: String?
     private(set) var history: [Float] = Array(repeating: 0, count: W)
     private(set) var pitches: [Float] = Array(repeating: 0.5, count: W)
@@ -42,14 +54,20 @@ final class SoundApp: CurtainApp {
     private(set) var haveAudio = false
 
     let tick = 0.05
-    var hint: String { "wischen oder tippen wechselt die darstellung" }
+    var hint: String { "cover, saeulen oder spiegel · wischen oder tippen wechselt. laeuft auch im hintergrund" }
 
     init(source: LevelSource? = nil, makeSource: (() async throws -> LevelSource)? = nil) {
         self.source = source
         self.makeSource = makeSource
     }
 
+    func setCover(_ frame: Frame?, title: String?) {
+        cover = frame
+        coverTitle = title
+    }
+
     func start() async {
+        await extraStart?()
         guard source == nil, let make = makeSource else { return }
         error = nil
         do { source = try await make() } catch {
@@ -58,6 +76,7 @@ final class SoundApp: CurtainApp {
     }
 
     func stop() {
+        extraStop?()
         source?.close()
         source = nil
     }
@@ -75,6 +94,7 @@ final class SoundApp: CurtainApp {
     }
 
     func status() -> String {
+        if mode == .cover, cover != nil { return coverTitle ?? "Cover" }
         if let e = error { return e }
         if !haveAudio { return "warte auf mikrofon..." }
         return mode.title
@@ -101,13 +121,15 @@ final class SoundApp: CurtainApp {
     }
 
     func frame() -> Frame {
+        if mode == .cover, let c = cover { return c }
         if error != nil { return WeatherFace.errorFrame() }
+        let shown: Mode = mode == .cover ? .bars : mode      // kein cover: saeulen
         var f = blankFrame()
         for x in 0..<W {
             let level = history[x]
             let hue = UInt8(max(0, min(180, Int(pitches[x] * 150))))
-            switch mode {
-            case .bars:
+            switch shown {
+            case .cover, .bars:
                 let h = Int((level * Float(H - 1)).rounded()) + (level > 0.02 ? 1 : 0)
                 for k in 0..<min(H, h) { f[(H - 1 - k) * W + x] = k >= H - 3 ? Px.white : hue }
             case .mirror:

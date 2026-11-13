@@ -31,7 +31,7 @@ struct PlayView: View {
         }
         .preferredColorScheme(.dark)
         .onChange(of: scenePhase) { _, phase in
-            if phase != .active { runner.paused = true }
+            if phase != .active && appID != "sound" { runner.paused = true }
         }
         .sheet(isPresented: $showSettings, onDismiss: { model.applySettings() }) {
             AppSettingsSheet(appID: appID)
